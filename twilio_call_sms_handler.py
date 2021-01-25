@@ -18,10 +18,11 @@ from urllib.parse import unquote_plus
 import json
 import boto3
 
-from credentials import credentials
+from secrets_manager import secrets_manager
 
-ACCOUNT_SID = credentials['twilio']['account_sid']
-AUTH_TOKEN = credentials['twilio']['auth_token']
+secrets = secrets_manager()
+ACCOUNT_SID = credentials.get('twilio/account_sid')
+AUTH_TOKEN = credentials.get('twilio/auth_token')
 
 ##############################################################################################################
 # LOG - Uses AWS Simple Notification Service to trigger the Twilio Google Sheets Logger Lambda Function.
@@ -35,7 +36,7 @@ def log(client_name, client_description, lead_number, call_or_sms, body):
         "body": body
     }
     client = boto3.client('sns', region_name='us-east-1')
-    arn = credentials['twilio']['aws_arn_google_sheets_logger']
+    arn = os.environ.get('aws_arn_google_sheets_logger')
     response = client.publish(
         TargetArn=arn,
         Message=json.dumps({'default': json.dumps(message)}),
